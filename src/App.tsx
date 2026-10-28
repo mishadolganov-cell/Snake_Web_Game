@@ -64,6 +64,17 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, changeDirection, startGame, togglePause, resetGame]);
 
+  // Prevent default touch behaviors on the game area
+  useEffect(() => {
+    const preventDefault = (e: TouchEvent) => {
+      if (e.target instanceof HTMLElement && e.target.closest('.game-area')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('touchmove', preventDefault, { passive: false });
+    return () => document.removeEventListener('touchmove', preventDefault);
+  }, []);
+
   // Touch swipe controls
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
@@ -75,7 +86,7 @@ function App() {
     const touch = e.changedTouches[0];
     const dx = touch.clientX - touchStartRef.current.x;
     const dy = touch.clientY - touchStartRef.current.y;
-    const minSwipe = 30;
+    const minSwipe = 25;
 
     if (Math.abs(dx) < minSwipe && Math.abs(dy) < minSwipe) return;
 
@@ -97,40 +108,46 @@ function App() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4 select-none overflow-hidden"
+      className="game-area min-h-[100dvh] h-[100dvh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center select-none overflow-hidden"
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 12px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 12px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Header */}
-      <div className="w-full max-w-lg mb-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-2">
-          🐍 Snake Game
+      {/* Header - compact for mobile */}
+      <div className="w-full max-w-[420px] px-4 pt-2 pb-1 flex-shrink-0">
+        <h1 className="text-2xl md:text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-2">
+          🐍 Snake
         </h1>
 
-        {/* Score Board */}
-        <div className="flex justify-between items-center bg-gray-800/60 backdrop-blur-sm rounded-xl px-4 py-3 border border-gray-700/50">
-          <div className="text-center">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">Score</p>
-            <p className="text-2xl font-bold text-emerald-400">{score}</p>
+        {/* Score Board - compact */}
+        <div className="flex justify-between items-center bg-gray-800/60 backdrop-blur-sm rounded-xl px-3 py-2 border border-gray-700/50">
+          <div className="text-center flex-1">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Score</p>
+            <p className="text-xl font-bold text-emerald-400">{score}</p>
           </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">Best</p>
-            <p className="text-2xl font-bold text-amber-400">{highScore}</p>
+          <div className="text-center flex-1 border-x border-gray-700/30">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Best</p>
+            <p className="text-xl font-bold text-amber-400">{highScore}</p>
           </div>
-          <div className="text-center">
-            <p className="text-xs text-gray-400 uppercase tracking-wider">Length</p>
-            <p className="text-2xl font-bold text-cyan-400">{snake.length}</p>
+          <div className="text-center flex-1">
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Length</p>
+            <p className="text-xl font-bold text-cyan-400">{snake.length}</p>
           </div>
         </div>
       </div>
 
       {/* Difficulty Selector */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 py-2 flex-shrink-0">
         {(['easy', 'medium', 'hard'] as Difficulty[]).map((d) => (
           <button
             key={d}
             onClick={() => handleDifficultyChange(d)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-semibold capitalize transition-all duration-200
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all duration-200
               ${difficulty === d
                 ? d === 'easy'
                   ? 'bg-green-500/20 text-green-400 border border-green-500/50 shadow-lg shadow-green-500/20'
@@ -148,21 +165,23 @@ function App() {
         ))}
       </div>
 
-      {/* Game Board Container */}
-      <div className="relative w-full max-w-lg aspect-square">
-        <GameBoard
-          snake={snake}
-          food={food}
-          gridSize={gridSize}
-          gameOver={gameState === 'gameover'}
-        />
+      {/* Game Board Container - responsive sizing */}
+      <div className="game-board-wrapper relative w-full max-w-[420px] flex-1 flex items-center justify-center px-3">
+        <div className="w-full aspect-square max-h-[50vh] md:max-h-[60vh]">
+          <GameBoard
+            snake={snake}
+            food={food}
+            gridSize={gridSize}
+            gameOver={gameState === 'gameover'}
+          />
+        </div>
 
         {/* Overlays */}
         {gameState === 'idle' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm rounded-xl z-20">
-            <div className="text-6xl mb-4 animate-bounce">🐍</div>
-            <p className="text-xl text-gray-200 font-semibold mb-2">Ready to Play?</p>
-            <p className="text-sm text-gray-400 mb-4">Use arrow keys or swipe to control</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/85 backdrop-blur-sm rounded-xl z-20 animate-fadeIn">
+            <div className="text-5xl mb-3 animate-bounce-in">🐍</div>
+            <p className="text-lg text-gray-200 font-semibold mb-1">Ready to Play?</p>
+            <p className="text-xs text-gray-400 mb-3">Swipe or use buttons to control</p>
             <button
               onClick={startGame}
               className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl
@@ -171,14 +190,14 @@ function App() {
             >
               Start Game
             </button>
-            <p className="text-xs text-gray-500 mt-3">or press Space</p>
+            <p className="text-[10px] text-gray-500 mt-2 hidden md:block">or press Space</p>
           </div>
         )}
 
         {gameState === 'paused' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm rounded-xl z-20">
-            <div className="text-5xl mb-4">⏸️</div>
-            <p className="text-xl text-gray-200 font-semibold mb-4">Paused</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/85 backdrop-blur-sm rounded-xl z-20 animate-fadeIn">
+            <div className="text-4xl mb-3">⏸️</div>
+            <p className="text-lg text-gray-200 font-semibold mb-3">Paused</p>
             <button
               onClick={togglePause}
               className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-white font-bold rounded-xl
@@ -187,20 +206,19 @@ function App() {
             >
               Resume
             </button>
-            <p className="text-xs text-gray-500 mt-3">or press Space</p>
           </div>
         )}
 
         {gameState === 'gameover' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/85 backdrop-blur-sm rounded-xl z-20 animate-fadeIn">
-            <div className="text-5xl mb-3">💀</div>
-            <p className="text-2xl text-red-400 font-bold mb-1">Game Over!</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 backdrop-blur-sm rounded-xl z-20 animate-fadeIn">
+            <div className="text-4xl mb-2">💀</div>
+            <p className="text-xl text-red-400 font-bold mb-1">Game Over!</p>
             {isNewHighScore && (
-              <p className="text-sm text-amber-400 font-semibold mb-2 animate-pulse">
+              <p className="text-xs text-amber-400 font-semibold mb-1 animate-pulse">
                 🏆 New High Score!
               </p>
             )}
-            <p className="text-lg text-gray-300 mb-4">Score: <span className="text-emerald-400 font-bold">{score}</span></p>
+            <p className="text-base text-gray-300 mb-3">Score: <span className="text-emerald-400 font-bold">{score}</span></p>
             <button
               onClick={startGame}
               className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl
@@ -209,39 +227,38 @@ function App() {
             >
               Play Again
             </button>
-            <p className="text-xs text-gray-500 mt-3">or press Space</p>
           </div>
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3 mt-4">
+      {/* Action Buttons - compact */}
+      <div className="flex gap-2 py-2 flex-shrink-0">
         {(gameState === 'playing' || gameState === 'paused') && (
           <button
             onClick={togglePause}
-            className="px-5 py-2 bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 font-semibold rounded-xl
-              transition-all duration-200 border border-gray-600/50 hover:scale-105 active:scale-95"
+            className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 text-sm font-semibold rounded-xl
+              transition-all duration-200 border border-gray-600/50 active:scale-95"
           >
             {gameState === 'paused' ? '▶ Resume' : '⏸ Pause'}
           </button>
         )}
         <button
           onClick={resetGame}
-          className="px-5 py-2 bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 font-semibold rounded-xl
-            transition-all duration-200 border border-gray-600/50 hover:scale-105 active:scale-95"
+          className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600/80 text-gray-200 text-sm font-semibold rounded-xl
+            transition-all duration-200 border border-gray-600/50 active:scale-95"
         >
           ↺ Restart
         </button>
       </div>
 
-      {/* Touch Controls (mobile only) */}
+      {/* Touch Controls - larger buttons for iPhone */}
       <TouchControls
         onDirection={changeDirection}
         disabled={gameState !== 'playing'}
       />
 
-      {/* Controls hint */}
-      <div className="mt-4 text-center text-xs text-gray-500 hidden md:block">
+      {/* Controls hint - desktop only */}
+      <div className="mt-1 text-center text-[10px] text-gray-500 hidden md:block flex-shrink-0">
         <p>Arrow Keys / WASD to move • Space to pause • R to restart</p>
       </div>
     </div>

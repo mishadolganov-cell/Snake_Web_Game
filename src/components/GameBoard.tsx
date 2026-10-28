@@ -27,10 +27,10 @@ export default function GameBoard({ snake, food, gridSize, gameOver }: GameBoard
         cells.push(
           <div
             key={key}
-            className="aspect-square rounded-md bg-emerald-400 shadow-lg shadow-emerald-400/50 scale-110 relative z-10 transition-all duration-75"
+            className="aspect-square rounded-[3px] bg-emerald-400 shadow-md shadow-emerald-400/50 scale-110 relative z-10 transition-all duration-75"
           >
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-gray-900 rounded-full" />
+              <div className="w-1 h-1 bg-gray-900 rounded-full" />
             </div>
           </div>
         );
@@ -39,7 +39,7 @@ export default function GameBoard({ snake, food, gridSize, gameOver }: GameBoard
         cells.push(
           <div
             key={key}
-            className={`aspect-square rounded-sm transition-all duration-75 ${gameOver ? 'opacity-40' : ''}`}
+            className={`aspect-square rounded-[2px] transition-all duration-75 ${gameOver ? 'opacity-40' : ''}`}
             style={{ backgroundColor: `rgba(52, 211, 153, ${opacity})` }}
           />
         );
@@ -47,14 +47,14 @@ export default function GameBoard({ snake, food, gridSize, gameOver }: GameBoard
         cells.push(
           <div
             key={key}
-            className="aspect-square rounded-full bg-red-400 shadow-lg shadow-red-400/50 animate-pulse scale-90"
+            className="aspect-square rounded-full bg-red-400 shadow-md shadow-red-400/50 animate-pulse scale-90"
           />
         );
       } else {
         cells.push(
           <div
             key={key}
-            className="aspect-square rounded-sm bg-gray-800/20"
+            className="aspect-square rounded-[1px] bg-gray-800/20"
           />
         );
       }
@@ -63,10 +63,11 @@ export default function GameBoard({ snake, food, gridSize, gameOver }: GameBoard
 
   return (
     <div
-      className="grid gap-[1px] bg-gray-900/50 p-1.5 md:p-2 rounded-xl border border-gray-700/50 backdrop-blur-sm shadow-2xl w-full h-full"
+      className="grid bg-gray-900/60 p-1 rounded-xl border border-gray-700/50 backdrop-blur-sm shadow-2xl w-full h-full"
       style={{
         gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
         gridTemplateRows: `repeat(${gridSize}, 1fr)`,
+        gap: '1px',
       }}
     >
       {cells}

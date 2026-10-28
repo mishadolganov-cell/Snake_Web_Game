@@ -20,6 +20,13 @@
   }
 }
 
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
@@ -28,21 +35,61 @@
   animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
-/* Prevent text selection during gameplay */
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+/* iOS-specific optimizations */
 .select-none {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
 
-/* Smooth touch interactions */
 .touch-manipulation {
   touch-action: manipulation;
 }
 
-/* Prevent pull-to-refresh on mobile */
+/* Prevent pull-to-refresh and bounce on iOS */
 html, body {
   overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Prevent zoom on double-tap for iOS */
+* {
+  touch-action: manipulation;
+}
+
+/* Safe area padding for iPhone notch/Dynamic Island */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-x {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* iPhone 17 Pro Max specific - larger screen optimization */
+@media (min-width: 430px) and (min-height: 900px) {
+  .game-container {
+    max-width: 420px;
+  }
+}
+
+/* iPhone SE / smaller iPhones */
+@media (max-height: 700px) {
+  .game-board-wrapper {
+    max-height: 55vh;
+  }
 }
 
 /* Custom scrollbar */
@@ -57,4 +104,23 @@ html, body {
 ::-webkit-scrollbar-thumb {
   background: #4b5563;
   border-radius: 3px;
+}
+
+/* Prevent text selection during gameplay on iOS */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Fix for iOS input zoom */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Smooth animations on iOS */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
